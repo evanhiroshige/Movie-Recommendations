@@ -1,11 +1,9 @@
 import json
-from typing import Dict, Any
-
 import numpy as np
 import pandas
 
-# new movie recommendation script
 
+# converts raw movie data to dictionaries
 def jsonify(movie_file, ratings_file):
     # movie_info: first column is movie id, second is movie title, third is genre
     movie_info = pandas.io.parsers.read_csv(movie_file, delimiter=',', dtype=None, encoding=None).values
@@ -26,6 +24,13 @@ def jsonify(movie_file, ratings_file):
         critic = ratings_dict.get(ratings[i][0], {})
         critic[ratings[i][1]] = ratings[i][2]
 
-    with open('movies.json', 'w') as file:
-        file.write(json.dumps(movie_dict))
+    with open('ratings.json', 'w') as file:
+        file.write(json.dumps(ratings_dict))
 
+
+# converts json data to a dictionary
+def djsonify(json_file):
+    with open('ratings.json', 'r') as file:
+        json_data = file.read()
+
+    return json.loads(json_data)
