@@ -25,3 +25,7 @@ def jsonify(movie_file, ratings_file):
     for i in range(0, len(ratings)):
         critic = ratings_dict.get(ratings[i][0], {})
         critic[ratings[i][1]] = ratings[i][2]
+
+    with open('movies.json', 'w') as file:
+        file.write(json.dumps(movie_dict))
+

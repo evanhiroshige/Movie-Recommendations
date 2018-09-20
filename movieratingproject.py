@@ -49,6 +49,7 @@ for i in range(q):
 
         if movieIds[i] == ratings[l][0] and movieIds[i] != movie:
             compare.append(ratings[l][2])
+            print(len(r), len(compare))
             if len(r) == len(compare):
                 for k in range(len(r)):
                     dif.append((r[k] - compare[k]) ** 2)
