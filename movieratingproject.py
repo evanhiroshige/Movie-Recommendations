@@ -1,5 +1,3 @@
-from typing import List, Any
-
 import numpy as np
 
 # movie id, title
@@ -16,14 +14,17 @@ ratings = np.genfromtxt('updatedmoviedata.csv', delimiter=',', encoding=None, dt
 #
 
 
-movie = 0
+movie = -1
 
 # FIND ID OF ENTERED MOVIE
 # Takes movie name input
-movieName = input("Enter moaaavie name: ")
+movieName = input("Enter movie name: ")
 for i in range(len(movieInfo)):
     if movieName == movieInfo[i][1]:
         movie = movieInfo[i][0]
+if (movie == -1):
+    raise Exception("movie name not found")
+
 
 # ADD ALL RATINGS OF MOVIE TO R
 # list of ratings
@@ -32,7 +33,7 @@ for i in range(len(ratings)):
     if ratings[i][0] == movie:
         r.append(ratings[i][2])
 
-# ADD ALL MOVIE IaDS INTO AN ARRAY KEY
+# ADD ALL MOVIE IDS INTO AN ARRAY KEY
 # movie number key in array
 movieIds = []
 for i in range(len(movieInfo)):
@@ -52,7 +53,6 @@ for i in range(q):
                 for k in range(len(r)):
                     dif.append((r[k] - compare[k]) ** 2)
                 distances.append(sum(dif) ** 0.5)
-
 # inserts zero into distances
 zero = movieIds.index(movie)
 distances.insert(zero, 0)
@@ -61,6 +61,8 @@ distances.insert(zero, 0)
 last = []
 for i in range(len(movieInfo)):
     last.append(i)
+
+print(distances, last)
 
 # sorts distances and last in same way
 distances, last = zip(*sorted(zip(distances, last)))
