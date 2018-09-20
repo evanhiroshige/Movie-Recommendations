@@ -70,14 +70,27 @@ def getRecommendations(title, movies, critic_ratings, movie_to_critic_rating):
     """
     title_to_id: dict = movies["key"]
     movie_id = title_to_id.get(title, -1)
+    ratings_for_search = movie_to_critic_rating[movie_id]
     if movie_id == -1:
         raise Exception(title + " could not be found in library.")
-    if movie_id not in movie_to_critic_rating:
+    if movie_id not in movie_to_critic_rating or len(ratings_for_search.keys()) < 5:
         raise Exception("Not enough reviews for " + title + " to recommend movies")
 
-    ratings_for_search = critic_ratings[movie_id]
-    for key, value in movie_to_critic_rating.items():
-        print(key)
+    for movie_compare, ratings_compare in movie_to_critic_rating.items():
+        if movie_compare == movie_id:
+            continue
+        distance = 0
+        critic_count = 0
+        for critic, rating in ratings_for_search:
+            if critic in ratings_compare:
+                critic_count += 1
+                distance += ((ratings_for_search[critic] - ratings_compare[critic]) ** 2) ** .5
+        if (critic_count < 5):
+            continue
+        average_distance = distance / critic_count
+
+
+
         #for critic_rating in movie
 
 
