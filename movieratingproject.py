@@ -1,9 +1,12 @@
 import numpy as np
+import time
 
 # movie id, title
 movieInfo = np.genfromtxt('movienamekey.csv', delimiter=',', encoding=None, dtype=None)
 # movie id, critic, rating
 ratings = np.genfromtxt('updatedmoviedata.csv', delimiter=',', encoding=None, dtype=None)
+movieName = input("Enter movie name: ")
+start_time = time.time()
 
 # TODO
 # 1. Parse data to be much smaller
@@ -18,7 +21,6 @@ movie = -1
 
 # FIND ID OF ENTERED MOVIE
 # Takes movie name input
-movieName = input("Enter movie name: ")
 for i in range(len(movieInfo)):
     if movieName == movieInfo[i][1]:
         movie = movieInfo[i][0]
@@ -42,22 +44,30 @@ for i in range(len(movieInfo)):
 # calculates distances
 q = len(movieIds)
 distances = []
+count = 0
+count2 = 0
+# for each movie not searching for, get critic rating of that movie, add critic rating to array
+#
+
 for i in range(q):
     compare = []
     dif = []
+    count += 1
     for l in range(len(ratings)):
-
+        count += 1
         if movieIds[i] == ratings[l][0] and movieIds[i] != movie:
+            count2 += 1
             compare.append(ratings[l][2])
             print(len(r), len(compare))
             if len(r) == len(compare):
                 for k in range(len(r)):
                     dif.append((r[k] - compare[k]) ** 2)
                 distances.append(sum(dif) ** 0.5)
+
 # inserts zero into distances
 zero = movieIds.index(movie)
 distances.insert(zero, 0)
-
+print(count, count2)
 # creates array with number of movies
 last = []
 for i in range(len(movieInfo)):
@@ -71,3 +81,4 @@ distances, last = zip(*sorted(zip(distances, last)))
 # prints rankings
 for i in range(len(movieInfo) - 1):
     print(movieInfo[last[i + 1]][1])
+print("--- %s seconds ---" % (time.time() - start_time))

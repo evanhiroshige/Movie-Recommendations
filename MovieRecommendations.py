@@ -2,6 +2,11 @@ import json
 import numpy as np
 import pandas
 
+"""
+TODO
+figure out what value shoudl
+
+"""
 
 # converts raw movie data to dictionaries
 def jsonify(movie_file, ratings_file):
@@ -9,28 +14,74 @@ def jsonify(movie_file, ratings_file):
     movie_info = pandas.io.parsers.read_csv(movie_file, delimiter=',', dtype=None, encoding=None).values
     # ratings: first column is user id, second is movie id, third is rating
     ratings = pandas.io.parsers.read_csv(ratings_file, delimiter=',', dtype=None, encoding=None).values
-    # userMovie = input("Enter a movie: ")
     movie_dict = {}
+    title_to_id = {}
     for i in range(0, len(movie_info)):
         title: str = movie_info[i][1]
-        movie_dict[movie_info[i][0]] = {"title": title[0: -7], "genres": movie_info[i][2]}
+        movie_id: int = movie_info[i][0]
+        genres = movie_info[i][1]
+        movie_dict[movie_id] = {"title": title, "genres": genres}
+        title_to_id[title] = movie_id
+    movie_dict["key"] = title_to_id
 
     with open('movies.json', 'w') as file:
         file.write(json.dumps(movie_dict))
 
     ratings_dict = {}
+    movie_id_to_critic_ratings = {}
 
     for i in range(0, len(ratings)):
-        critic = ratings_dict.get(ratings[i][0], {})
-        critic[ratings[i][1]] = ratings[i][2]
+        critic_id: int = ratings[i][0]
+        movie_id: int = ratings[i][1]
+        rating: float = ratings[i][2]
+
+        critic: dict = ratings_dict.get(critic_id, {})
+        critic[int(movie_id)] = rating
+        ratings_dict[int(critic_id)] = critic
+
+        critic_to_rating: dict = movie_id_to_critic_ratings.get(movie_id, {})
+        critic_to_rating[int(critic_id)] = rating
+        movie_id_to_critic_ratings[int(movie_id)] = critic_to_rating
 
     with open('ratings.json', 'w') as file:
         file.write(json.dumps(ratings_dict))
 
+    with open('movie_to_ratings.json', 'w') as file:
+        file.write(json.dumps(movie_id_to_critic_ratings))
+
 
 # converts json data to a dictionary
 def djsonify(json_file):
-    with open('ratings.json', 'r') as file:
+    with open(json_file, 'r') as file:
         json_data = file.read()
 
     return json.loads(json_data)
+#jsonify("movies.csv", "ratings.csv")
+
+# title: (str) name of movie
+# movies: (dict) key: movie id, value: (dict) title and genre
+# critic_ratings: (dict) key: critic id, value: (dict) key: movie id, value: rating
+def getRecommendations(title, movies, critic_ratings, movie_to_critic_rating):
+    """
+    :type title: str
+    :type movies: dict
+    :type critic_ratings: dict
+    :type movie_to_critic_rating: dict
+    """
+    title_to_id: dict = movies["key"]
+    movie_id = title_to_id.get(title, -1)
+    if movie_id == -1:
+        raise Exception(title + " could not be found in library.")
+    if movie_id not in movie_to_critic_rating:
+        raise Exception("Not enough reviews for " + title + " to recommend movies")
+
+    ratings_for_search = critic_ratings[movie_id]
+    for key, value in movie_to_critic_rating.items():
+        print(key)
+        #for critic_rating in movie
+
+
+
+
+
+
