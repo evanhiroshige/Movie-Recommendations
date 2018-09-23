@@ -1,15 +1,6 @@
 import json
-import numpy as np
 import pandas
 import time
-
-"""
-TODO
-Implement genre filtered searches
-searching for movie, if typo, suggests closest name e.g. enter movie: toy stroy - "Did you mean toy story"
-make it faster (possibly with some stats)
-
-"""
 
 
 # converts raw movie csv data to dictionaries
@@ -28,7 +19,7 @@ def jsonify(movie_file, ratings_file):
         title_to_id[title] = movie_id
     movie_dict["key"] = title_to_id
 
-    with open('movies.json', 'w') as file:
+    with open('big_movies.json', 'w') as file:
         file.write(json.dumps(movie_dict))
 
     # ratings_dict = {}
@@ -50,7 +41,7 @@ def jsonify(movie_file, ratings_file):
     # with open('ratings.json', 'w') as file:
     # file.write(json.dumps(ratings_dict))
 
-    with open('movie_to_ratings.json', 'w') as file:
+    with open('movie_to_big_ratings.json', 'w') as file:
         file.write(json.dumps(movie_id_to_critic_ratings))
 
 
@@ -62,11 +53,14 @@ def djsonify(json_file):
     return json.loads(json_data)
 
 
+min_reviews = 20
+
+
 # title: (str) name of movie
 # movies: (dict) key: movie id, value: (dict) title and genre
 # move_to_critic_ratings: (dict) key: movie id, value: (dict) key: critic id, value: rating
 def get_recommendations(title, movies, movie_to_critic_rating):
-    min_reviews = 20
+
     """
     :type title: str
     :type movies: dict
@@ -104,10 +98,14 @@ def get_recommendations(title, movies, movie_to_critic_rating):
     return recommendations
 
 
+movie_file = "big_movies.json"
+ratings_file = "movie_to_big_ratings.json"
+
+
 def main():
-    # jsonify("big_movies.csv", "big_ratings.csv")
-    movies = djsonify("movies.json")
-    movie_to_critic_rating = djsonify("movie_to_big_ratings.json")
+    jsonify("movies.csv", "ratings.csv")
+    movies = djsonify(movie_file)
+    movie_to_critic_rating = djsonify(ratings_file)
     title = input("Enter movie title: ")
     t = time.time()
     get_recommendations(title, movies, movie_to_critic_rating)
