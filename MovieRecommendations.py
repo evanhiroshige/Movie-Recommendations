@@ -3,12 +3,12 @@ import pandas
 import time
 
 
-# converts raw movie csv data to dictionaries
-def jsonify(movie_file, ratings_file):
+# converts raw movie csv data to json
+def jsonify(movie_csv, movie_json_file_name, ratings_csv, ratings_json_file_name):
     # movie_info: first column is movie id, second is movie title, third is genre
-    movie_info = pandas.io.parsers.read_csv(movie_file, delimiter=',', dtype=None, encoding=None).values
+    movie_info = pandas.io.parsers.read_csv(movie_csv, delimiter=',', dtype=None, encoding=None).values
     # ratings: first column is user id, second is movie id, third is rating
-    ratings = pandas.io.parsers.read_csv(ratings_file, delimiter=',', dtype=None, encoding=None).values
+    ratings = pandas.io.parsers.read_csv(ratings_csv, delimiter=',', dtype=None, encoding=None).values
 
     movie_dict = {}
     title_to_id = {}
@@ -19,7 +19,7 @@ def jsonify(movie_file, ratings_file):
         movie_dict[movie_id] = {"title": title, "genres": genres}
         title_to_id[title] = movie_id
     movie_dict["key"] = title_to_id
-    with open('big_movies.json', 'w') as file:
+    with open(movie_json_file_name, 'w') as file:
         file.write(json.dumps(movie_dict))
 
     movie_id_to_critic_ratings = {}
@@ -30,7 +30,7 @@ def jsonify(movie_file, ratings_file):
         critic_to_rating: dict = movie_id_to_critic_ratings.get(movie_id, {})
         critic_to_rating[int(critic_id)] = rating
         movie_id_to_critic_ratings[int(movie_id)] = critic_to_rating
-    with open('movie_to_big_ratings.json', 'w') as file:
+    with open(ratings_json_file_name, 'w') as file:
         file.write(json.dumps(movie_id_to_critic_ratings))
 
 
@@ -42,7 +42,6 @@ def djsonify(json_file):
     return json.loads(json_data)
 
 
-min_reviews = 20
 
 
 # title: (str) name of movie
@@ -55,6 +54,8 @@ def get_recommendations(title, movies, movie_to_critic_rating):
     :type critic_ratings: dict
     :type movie_to_critic_rating: dict
     """
+
+    min_reviews = 20
     title_to_id: dict = movies["key"]
     movie_id = str(int(title_to_id.get(title, -1)))
     ratings_for_search = movie_to_critic_rating.get(movie_id, -1)
@@ -81,6 +82,7 @@ def get_recommendations(title, movies, movie_to_critic_rating):
                                 movies[movie_compare]["genres"]))
     recommendations = sorted(recommendations, key=lambda rec: rec[0])
     print("Title, Genre(s), Confidence")
+    print()
     for pair in recommendations:
         print(pair[1] + ", ", pair[2] + ", ", pair[0])
     return recommendations
@@ -90,14 +92,16 @@ movie_file = "big_movies.json"
 ratings_file = "movie_to_big_ratings.json"
 
 
-def main():
-    jsonify("movies.csv", "ratings.csv")
+def main(convert):
+    if convert:
+        jsonify("big_movies.csv", "big_movies.json", "big_ratings.csv", "movie_to_big_ratings.json")
     movies = djsonify(movie_file)
     movie_to_critic_rating = djsonify(ratings_file)
-    title = input("Enter movie title: ")
-    t = time.time()
-    get_recommendations(title, movies, movie_to_critic_rating)
-    print(time.time() - t)
+    while True:
+        title = input("Enter movie title: ")
+        t = time.time()
+        get_recommendations(title, movies, movie_to_critic_rating)
+        print(time.time() - t)
 
 
-main()
+main(False)
