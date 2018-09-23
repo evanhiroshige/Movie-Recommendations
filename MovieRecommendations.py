@@ -5,11 +5,14 @@ import time
 
 """
 TODO
-figure out what value shoudl
+Implement genre filtered searches
+searching for movie, if typo, suggests closest name e.g. enter movie: toy stroy - "Did you mean toy story"
+make it faster (possibly with some stats)
 
 """
 
-# converts raw movie data to dictionaries
+
+# converts raw movie csv data to dictionaries
 def jsonify(movie_file, ratings_file):
     # movie_info: first column is movie id, second is movie title, third is genre
     movie_info = pandas.io.parsers.read_csv(movie_file, delimiter=',', dtype=None, encoding=None).values
@@ -20,7 +23,7 @@ def jsonify(movie_file, ratings_file):
     for i in range(0, len(movie_info)):
         title: str = movie_info[i][1]
         movie_id: int = movie_info[i][0]
-        genres = movie_info[i][1]
+        genres = movie_info[i][2]
         movie_dict[movie_id] = {"title": title, "genres": genres}
         title_to_id[title] = movie_id
     movie_dict["key"] = title_to_id
@@ -61,7 +64,7 @@ def djsonify(json_file):
 
 # title: (str) name of movie
 # movies: (dict) key: movie id, value: (dict) title and genre
-# critic_ratings: (dict) key: critic id, value: (dict) key: movie id, value: rating
+# move_to_critic_ratings: (dict) key: movie id, value: (dict) key: critic id, value: rating
 def get_recommendations(title, movies, movie_to_critic_rating):
     min_reviews = 20
     """
@@ -75,9 +78,11 @@ def get_recommendations(title, movies, movie_to_critic_rating):
     ratings_for_search = movie_to_critic_rating.get(movie_id, -1)
     if movie_id == -1:
         raise Exception(title + " could not be found in library.")
-    if movie_id not in movie_to_critic_rating or len(ratings_for_search.values()) < min_reviews:
+    if movie_id not in movie_to_critic_rating or len(ratings_for_search.items()) < min_reviews:
         raise Exception("Not enough reviews for " + title + " to recommend movies")
+
     recommendations = []
+    # for each corresponding movie
     for movie_compare, ratings_compare in movie_to_critic_rating.items():
         if movie_compare == movie_id or len(ratings_compare.keys()) < min_reviews:
             continue
@@ -90,14 +95,17 @@ def get_recommendations(title, movies, movie_to_critic_rating):
         if critic_count < min_reviews:
             continue
         average_distance = distance ** .5 / critic_count
-        recommendations.append((average_distance, movies[movie_compare]["title"]))
+        recommendations.append((average_distance, movies[movie_compare]["title"],
+                                movies[movie_compare]["genres"]))
     recommendations = sorted(recommendations, key=lambda rec: rec[0])
+    print("Title, Genre(s), Confidence")
     for pair in recommendations:
-        print(pair[1], pair[0])
+        print(pair[1] + ", ", pair[2] + ", ", pair[0])
+    return recommendations
 
 
 def main():
-    jsonify("movies.csv", "ratings.csv")
+    # jsonify("big_movies.csv", "big_ratings.csv")
     movies = djsonify("movies.json")
     movie_to_critic_rating = djsonify("movie_to_ratings.json")
     title = input("Enter movie title: ")
