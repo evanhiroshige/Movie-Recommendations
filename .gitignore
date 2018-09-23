@@ -1,3 +1,4 @@
 .DS_Store
 .idea
-.csv
+*.csv
+movie_to_big_ratings.json

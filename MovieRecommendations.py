@@ -9,6 +9,7 @@ def jsonify(movie_file, ratings_file):
     movie_info = pandas.io.parsers.read_csv(movie_file, delimiter=',', dtype=None, encoding=None).values
     # ratings: first column is user id, second is movie id, third is rating
     ratings = pandas.io.parsers.read_csv(ratings_file, delimiter=',', dtype=None, encoding=None).values
+
     movie_dict = {}
     title_to_id = {}
     for i in range(0, len(movie_info)):
@@ -18,29 +19,17 @@ def jsonify(movie_file, ratings_file):
         movie_dict[movie_id] = {"title": title, "genres": genres}
         title_to_id[title] = movie_id
     movie_dict["key"] = title_to_id
-
     with open('big_movies.json', 'w') as file:
         file.write(json.dumps(movie_dict))
 
-    # ratings_dict = {}
     movie_id_to_critic_ratings = {}
-
     for i in range(0, len(ratings)):
         critic_id: int = ratings[i][0]
         movie_id: int = ratings[i][1]
         rating: float = ratings[i][2]
-
-        #critic: dict = ratings_dict.get(critic_id, {})
-        #critic[int(movie_id)] = rating
-        #ratings_dict[int(critic_id)] = critic
-
         critic_to_rating: dict = movie_id_to_critic_ratings.get(movie_id, {})
         critic_to_rating[int(critic_id)] = rating
         movie_id_to_critic_ratings[int(movie_id)] = critic_to_rating
-
-    # with open('ratings.json', 'w') as file:
-    # file.write(json.dumps(ratings_dict))
-
     with open('movie_to_big_ratings.json', 'w') as file:
         file.write(json.dumps(movie_id_to_critic_ratings))
 
@@ -60,7 +49,6 @@ min_reviews = 20
 # movies: (dict) key: movie id, value: (dict) title and genre
 # move_to_critic_ratings: (dict) key: movie id, value: (dict) key: critic id, value: rating
 def get_recommendations(title, movies, movie_to_critic_rating):
-
     """
     :type title: str
     :type movies: dict
