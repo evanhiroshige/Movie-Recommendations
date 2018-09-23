@@ -107,7 +107,7 @@ def get_recommendations(title, movies, movie_to_critic_rating):
 def main():
     # jsonify("big_movies.csv", "big_ratings.csv")
     movies = djsonify("movies.json")
-    movie_to_critic_rating = djsonify("movie_to_ratings.json")
+    movie_to_critic_rating = djsonify("movie_to_big_ratings.json")
     title = input("Enter movie title: ")
     t = time.time()
     get_recommendations(title, movies, movie_to_critic_rating)
