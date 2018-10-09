@@ -1,5 +1,6 @@
 import time
 from Serializers import djsonify
+import math
 
 
 # title: (str) name of movie
@@ -14,6 +15,8 @@ def get_recommendations(title, movies, movie_to_critic_rating, genre=""):
     """
 
     min_reviews = 20
+    minimum_distance_factor = 1.25
+
     title_to_id: dict = movies["key"]
     movie_id = str(int(title_to_id.get(title, -1)))
     ratings_for_search = movie_to_critic_rating.get(movie_id, -1)
@@ -24,6 +27,7 @@ def get_recommendations(title, movies, movie_to_critic_rating, genre=""):
 
     recommendations = []
     for movie_compare, ratings_compare in movie_to_critic_rating.items():
+        close_enough = True
         if movie_compare == movie_id or genre.lower() not in movies[movie_compare]["genres"].lower() or len(ratings_compare.keys()) < min_reviews:
             continue
         distance = 0
@@ -32,16 +36,15 @@ def get_recommendations(title, movies, movie_to_critic_rating, genre=""):
             if critic in ratings_compare:
                 critic_count += 1
                 distance += ((ratings_for_search[critic] - ratings_compare[critic]) ** 2)
-        if critic_count < min_reviews:
+                if distance / critic_count > minimum_distance_factor:
+                    close_enough = False
+                    break
+        if critic_count < min_reviews or not close_enough:
             continue
         average_distance = distance / critic_count  # (1/critic_count)
         recommendations.append((average_distance, movies[movie_compare]["title"],
                                 movies[movie_compare]["genres"]))
     recommendations = sorted(recommendations, key=lambda rec: rec[0])
-    print("Title, Genre(s), Confidence")
-    print()
-    for pair in recommendations:
-        print(pair[1] + ", ", pair[2] + ", ", pair[0])
     return recommendations
 
 
@@ -55,9 +58,16 @@ def main():
     while True:
         title = input("Enter movie title: ")
         genre = input("Enter genre: " )
-        t = time.time()
-        get_recommendations(title, movies, movie_to_critic_rating, genre)
-        print(time.time() - t)
+        try:
+            t = time.time()
+            rec = get_recommendations(title, movies, movie_to_critic_rating, genre)
+            elapsed = time.time() - t
+            print("Found ", len(rec), " suggestions in ", elapsed, " seconds.")
+            print("Title, Genre(s), Confidence\n")
+            for pair in rec:
+                print(pair[1] + ", ", pair[2] + ", ", pair[0])
+        except Exception:
+            continue
 
 
 main()
