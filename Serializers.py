@@ -1,5 +1,6 @@
 import json
 import pandas
+import ujson
 
 
 # converts raw movie csv data to json
@@ -32,11 +33,6 @@ def jsonify(movie_csv, movie_json_file_name, ratings_csv, ratings_json_file_name
     with open(ratings_json_file_name, 'w') as file:
         file.write(json.dumps(movie_id_to_critic_ratings))
 
-
 # converts json data to a dictionary
 def djsonify(json_file):
-    with open(json_file, 'r') as file:
-        json_data = file.read()
-
-    return json.loads(json_data)
-
+    return ujson.load(open(json_file, "r"))
