@@ -20,12 +20,11 @@ def get_recommendations(title, movies, movie_to_critic_rating, genre=""):
     title_to_id: dict = movies["key"]
     movie_id = str(int(title_to_id.get(title, -1)))
     ratings_for_search = movie_to_critic_rating.get(movie_id, -1)
-    total_ratings = len(ratings_for_search)
     if movie_id == -1:
         raise KeyError(title + " could not be found in library.")
     if movie_id not in movie_to_critic_rating or len(ratings_for_search.keys()) < min_reviews:
         raise Exception("Not enough reviews for " + title + " to recommend movies")
-
+    total_ratings = len(ratings_for_search.keys())
     recommendations = []
     for movie_compare, ratings_compare in movie_to_critic_rating.items():
         if movie_compare == movie_id or genre.lower() not in movies[movie_compare]["genres"].lower() or \
@@ -66,7 +65,8 @@ def main():
             print("Title, Genre(s), Confidence\n")
             for pair in rec:
                 print(pair[1] + ",", pair[2] + ", %.3f" % pair[0])
-        except Exception:
+        except Exception as err:
+            print(err)
             continue
 
 
