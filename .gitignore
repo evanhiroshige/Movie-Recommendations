@@ -2,3 +2,4 @@
 .idea
 *.csv
 movie_to_big_ratings.json
+__pycache__/

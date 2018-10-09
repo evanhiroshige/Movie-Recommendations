@@ -20,15 +20,16 @@ def get_recommendations(title, movies, movie_to_critic_rating, genre=""):
     title_to_id: dict = movies["key"]
     movie_id = str(int(title_to_id.get(title, -1)))
     ratings_for_search = movie_to_critic_rating.get(movie_id, -1)
+    total_ratings = len(ratings_for_search)
     if movie_id == -1:
-        raise Exception(title + " could not be found in library.")
+        raise KeyError(title + " could not be found in library.")
     if movie_id not in movie_to_critic_rating or len(ratings_for_search.keys()) < min_reviews:
         raise Exception("Not enough reviews for " + title + " to recommend movies")
 
     recommendations = []
     for movie_compare, ratings_compare in movie_to_critic_rating.items():
-        close_enough = True
-        if movie_compare == movie_id or genre.lower() not in movies[movie_compare]["genres"].lower() or len(ratings_compare.keys()) < min_reviews:
+        if movie_compare == movie_id or genre.lower() not in movies[movie_compare]["genres"].lower() or \
+            len(ratings_compare.keys()) < min_reviews:
             continue
         distance = 0
         critic_count = 0
@@ -36,12 +37,11 @@ def get_recommendations(title, movies, movie_to_critic_rating, genre=""):
             if critic in ratings_compare:
                 critic_count += 1
                 distance += ((ratings_for_search[critic] - ratings_compare[critic]) ** 2)
-                if distance / critic_count > minimum_distance_factor:
-                    close_enough = False
+                if distance / total_ratings > minimum_distance_factor:
                     break
-        if critic_count < min_reviews or not close_enough:
+        if critic_count < min_reviews or distance / critic_count > minimum_distance_factor:
             continue
-        average_distance = distance / critic_count  # (1/critic_count)
+        average_distance = distance / critic_count
         recommendations.append((average_distance, movies[movie_compare]["title"],
                                 movies[movie_compare]["genres"]))
     recommendations = sorted(recommendations, key=lambda rec: rec[0])
@@ -57,15 +57,15 @@ def main():
     movie_to_critic_rating = djsonify(ratings_file)
     while True:
         title = input("Enter movie title: ")
-        genre = input("Enter genre: " )
+        genre = input("Enter genre: ")
         try:
             t = time.time()
             rec = get_recommendations(title, movies, movie_to_critic_rating, genre)
             elapsed = time.time() - t
-            print("Found ", len(rec), " suggestions in ", elapsed, " seconds.")
+            print("Found", len(rec), "suggestions in %.3f" % elapsed, "seconds.")
             print("Title, Genre(s), Confidence\n")
             for pair in rec:
-                print(pair[1] + ", ", pair[2] + ", ", pair[0])
+                print(pair[1] + ",", pair[2] + ", %.3f" % pair[0])
         except Exception:
             continue
 
